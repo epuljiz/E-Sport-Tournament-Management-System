@@ -16,3 +16,7 @@ postgres_data/
 # IDE
 .vscode/
 .idea/
+
+# Dokumentacija i planovi (ne commitati)
+izvjesce_*.md
+plan_razvoja.md
