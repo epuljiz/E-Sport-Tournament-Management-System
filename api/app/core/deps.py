@@ -43,3 +43,13 @@ async def get_current_user(
         raise AppError("invalid_credentials", "Korisnik ne postoji ili je deaktiviran", 401)
 
     return user
+
+def require_role(*allowed_roles: str):
+    """
+    Factory dependency: propušta samo korisnike s navedenom rolom.
+    """
+    def checker(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.role not in allowed_roles:
+            raise AppError("forbidden", "Nemate dozvolu za ovu akciju", 403)
+        return current_user
+    return checker
