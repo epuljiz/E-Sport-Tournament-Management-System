@@ -89,6 +89,23 @@ async def team_and_user(db: AsyncSession) -> tuple[Team, User]:
     await db.refresh(team)
     return team, user
 
+@pytest.fixture
+async def player(db: AsyncSession, team_and_user) -> Player:
+    from datetime import date
+    team, _ = team_and_user
+    player = Player(
+        first_name="Jane",
+        last_name="Doe",
+        nickname="janedoe",
+        position="Entry Fragger",
+        birth_date=date(2000, 1, 1),
+        team_id=team.id
+    )
+    db.add(player)
+    await db.commit()
+    await db.refresh(player)
+    return player
+
 async def auth_header(client: AsyncClient, username: str, password: str) -> dict:
     resp = await client.post("/auth/login", json={"username": username, "password": password})
     token = resp.json()["access_token"]
