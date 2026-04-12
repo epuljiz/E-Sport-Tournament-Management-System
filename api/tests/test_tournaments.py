@@ -16,49 +16,45 @@ async def tournament_data():
         "final_deadline": (now + timedelta(days=20)).isoformat()
     }
 
-@pytest.mark.asyncio
 async def test_admin_can_create_tournament(client: AsyncClient, admin_user, tournament_data):
-    headers = await auth_header(client, "testadmin", "admin123")
-    resp = await client.post("/tournaments/", json=tournament_data, headers=headers)
+    h = await auth_header(client, "testadmin", "admin123")
+    resp = await client.post("/tournaments/", json=tournament_data, headers=h)
     assert resp.status_code == 201
     assert resp.json()["name"] == "Major Copenhagen 2024"
 
-@pytest.mark.asyncio
 async def test_team_registration_fails_if_less_than_5_players(client: AsyncClient, team_and_user, admin_user, tournament_data):
-    # Tim u conftestu ima samo jednog usera (ali tim_and_user fixture ne dodaje 5 igrača)
-    headers_admin = await auth_header(client, "testadmin", "admin123")
-    t_resp = await client.post("/tournaments/", json=tournament_data, headers_admin=headers_admin)
+    h_admin = await auth_header(client, "testadmin", "admin123")
+    t_resp = await client.post("/tournaments/", json=tournament_data, headers=h_admin)
     t_id = t_resp.json()["id"]
 
-    headers_team = await auth_header(client, "testteam", "team123")
-    resp = await client.post(f"/tournaments/{t_id}/registrations", headers=headers_team)
+    h_team = await auth_header(client, "testteam", "team123")
+    resp = await client.post(f"/tournaments/{t_id}/registrations", headers=h_team)
     
     assert resp.status_code == 400
-    assert "barem 5 igrača" in resp.json()["detail"]
+    assert "barem 5 igrača" in resp.json()["message"]
 
-@pytest.mark.asyncio
 async def test_registration_deadline_logic(client: AsyncClient, admin_user, team_and_user, db, tournament_data):
-    # 1. Kreiraj turnir
-    headers_admin = await auth_header(client, "testadmin", "admin123")
-    t_resp = await client.post("/tournaments/", json=tournament_data, headers=headers_admin)
+    h_admin = await auth_header(client, "testadmin", "admin123")
+    t_resp = await client.post("/tournaments/", json=tournament_data, headers=h_admin)
     t_id = t_resp.json()["id"]
 
-    # 2. Dodaj 5 igrača timu (id tima iz conftesta je dostupan preko team_and_user)
     from app.models.player import Player
     team, _ = team_and_user
     for i in range(5):
-        p = Player(first_name=f"P{i}", last_name="Test", nickname=f"nick{i}", position="Test", birth_date=date(2000,1,1), team_id=team.id)
+        p = Player(first_name=f"P{i}", last_name="T", nickname=f"n{i}", position="T", birth_date=date(2000,1,1), team_id=team.id)
         db.add(p)
     await db.commit()
 
     # 3. Testiraj OPEN fazu (unutar roka)
-    headers_team = await auth_header(client, "testteam", "team123")
     with freeze_time(datetime.now(timezone.utc)):
-        resp = await client.post(f"/tournaments/{t_id}/registrations", headers=headers_team)
+        h_team = await auth_header(client, "testteam", "team123")
+        resp = await client.post(f"/tournaments/{t_id}/registrations", headers=h_team)
         assert resp.status_code == 201
 
     # 4. Testiraj CLOSED fazu (prošao rok)
     with freeze_time(datetime.now(timezone.utc) + timedelta(days=25)):
-        resp = await client.post(f"/tournaments/{t_id}/registrations", headers=headers_team)
+        # Moramo re-login unutar freeze_time jer bi inače token iz prošlosti bio istekao
+        h_team_future = await auth_header(client, "testteam", "team123")
+        resp = await client.post(f"/tournaments/{t_id}/registrations", headers=h_team_future)
         assert resp.status_code == 400
         assert resp.json()["code"] == "deadline_passed"

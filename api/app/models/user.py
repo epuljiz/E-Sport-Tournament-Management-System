@@ -18,4 +18,4 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
     team_id: Mapped[Optional[int]] = mapped_column(ForeignKey("teams.id"), nullable=True)
-    team: Mapped[Optional[Team]] = relationship(back_populates="members")
+    team: Mapped[Optional[Team]] = relationship(back_populates="admins")

@@ -21,17 +21,23 @@ async def register_team(db: AsyncSession, tournament_id: int, current_user: User
     if current_user.role != "admin" and not current_user.team_id:
          raise AppError("forbidden", "Korisnik nema pridružen tim", 403)
     
-    team_id = current_user.team_id # U stvarnosti admin bi mogao birati tim, ovdje pojednostavljujemo
+    team_id = current_user.team_id # U stvarnosti admin bi mogao birati tim, ovdje pojednostavljujem
 
     # 3. Poslovno pravilo: Tim mora imati barem 5 igrača
-    team = await team_repo.get_by_id(db, team_id)
-    if len(team.members) < 5:
-        raise AppError("invalid_team", f"Tim mora imati barem 5 igrača za prijavu (trenutno: {len(team.members)})", 400)
+    from sqlalchemy import func, select
+    from app.models.player import Player
+    
+    count_stmt = select(func.count(Player.id)).where(Player.team_id == team_id)
+    player_count = (await db.execute(count_stmt)).scalar_one()
+
+    if player_count < 5:
+        raise AppError("invalid_team", f"Tim mora imati barem 5 igrača za prijavu (trenutno: {player_count})", 400)
 
     # 4. Kreiranje prijave
     reg = TournamentRegistration(team_id=team_id, tournament_id=tournament_id)
     try:
         await registration_repo.create(db, reg)
+        await db.refresh(reg, ["team"])
     except IntegrityError:
         raise AppError("duplicate", "Tim je već prijavljen na ovaj turnir", 409)
     

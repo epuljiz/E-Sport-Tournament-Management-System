@@ -13,7 +13,7 @@ class Tournament(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
-    game: Mapped[str] = mapped_column(String(100), nullable=False) # npr. Counter-Strike 2
+    game: Mapped[str] = mapped_column(String(100), nullable=False)
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     location: Mapped[str] = mapped_column(String(200), nullable=False)
 
