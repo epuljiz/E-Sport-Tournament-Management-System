@@ -20,4 +20,4 @@ class Player(Base):
     nationality: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
 
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), nullable=False)
-    team: Mapped[Team] = relationship(back_populates="members")
+    team: Mapped[Team] = relationship(back_populates="players")

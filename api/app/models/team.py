@@ -6,6 +6,7 @@ from app.core.database import Base
 
 if TYPE_CHECKING:
     from app.models.user import User
+    from app.models.player import Player
 
 class Team(Base):
     __tablename__ = "teams"
@@ -15,4 +16,5 @@ class Team(Base):
     organization_name: Mapped[str] = mapped_column(String(100), nullable=True)
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    members: Mapped[list[User]] = relationship(back_populates="team")
+    admins: Mapped[list[User]] = relationship(back_populates="team")
+    players: Mapped[list[Player]] = relationship(back_populates="team")

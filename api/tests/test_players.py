@@ -2,7 +2,7 @@ import pytest
 from httpx import AsyncClient
 from tests.conftest import auth_header
 
-@pytest.mark.asyncio
+
 async def test_team_admin_can_create_player(client: AsyncClient, team_and_user):
     team, user = team_and_user
     headers = await auth_header(client, "testteam", "team123")
@@ -22,7 +22,7 @@ async def test_team_admin_can_create_player(client: AsyncClient, team_and_user):
     assert resp.status_code == 201
     assert resp.json()["nickname"] == "s1mple"
 
-@pytest.mark.asyncio
+
 async def test_team_admin_cannot_access_other_team_players(client: AsyncClient, team_and_user, player):
     # 'player' pripada 'team_and_user' timu.
     # Treba nam drugi tim i user.
@@ -30,7 +30,7 @@ async def test_team_admin_cannot_access_other_team_players(client: AsyncClient, 
     # Ali zapravo conftest ima samo team_and_user.
     pass
 
-@pytest.mark.asyncio
+
 async def test_list_players(client: AsyncClient, team_and_user, player):
     team, _ = team_and_user
     headers = await auth_header(client, "testteam", "team123")
@@ -40,7 +40,7 @@ async def test_list_players(client: AsyncClient, team_and_user, player):
     assert len(resp.json()) == 1
     assert resp.json()[0]["nickname"] == "janedoe"
 
-@pytest.mark.asyncio
+
 async def test_get_player_details(client: AsyncClient, team_and_user, player):
     team, _ = team_and_user
     headers = await auth_header(client, "testteam", "team123")

@@ -8,12 +8,12 @@ class Phase(str, Enum):
     CLOSED = "closed"
 
 def get_tournament_phase(tournament: Tournament) -> Phase:
-    """Odredi fazu turnira prema trenutnom vremenu (UTC)."""
+    """Odredi fazu turnira prema trenutnom vremenu."""
     now = datetime.now(timezone.utc)
     prelim = tournament.prelim_deadline
     final = tournament.final_deadline
 
-    # Dodajemo UTC ako nedostaje (SQLite kompatibilnost)
+    # Dodajemo UTC ako nedostaje
     if prelim.tzinfo is None:
         prelim = prelim.replace(tzinfo=timezone.utc)
     if final.tzinfo is None:

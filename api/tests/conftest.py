@@ -8,6 +8,7 @@ from app.core.database import Base
 from app.core.deps import get_db
 from app.core.security import hash_password
 from app.main import app as fastapi_app
+from app.models.player import Player
 from app.models.team import Team
 from app.models.user import User
 
