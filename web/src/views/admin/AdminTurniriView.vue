@@ -21,16 +21,6 @@ const fetchTurniri = async () => {
   }
 };
 
-const izbrisiTurnir = async (id: number) => {
-  if (!confirm('Jeste li sigurni da želite obrisati ovaj turnir?')) return;
-  try {
-    await api.delete(`/tournaments/${id}`);
-    obavijesti.uspjeh('Turnir uspješno obrisan');
-    await fetchTurniri();
-  } catch (e: any) {
-    obavijesti.greska('Greška pri brisanju turnira');
-  }
-};
 
 onMounted(fetchTurniri);
 </script>
