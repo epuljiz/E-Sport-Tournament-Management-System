@@ -1,0 +1,39 @@
+services:
+  # Backend API (FastAPI)
+  - type: web
+    name: esport-api
+    env: python
+    region: frankfurt
+    buildCommand: "cd api && pip install -r requirements.txt"
+    startCommand: "cd api && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: esport-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: "https://esport-web.onrender.com"
+
+  # Frontend Web (Vue 3 / Vite)
+  - type: web
+    name: esport-web
+    env: static
+    region: frankfurt
+    buildCommand: "cd web && npm install && npm run build"
+    staticPublishPath: "./web/dist"
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: esport-api
+          envVarKey: RENDER_EXTERNAL_URL
+
+databases:
+  # PostgreSQL Baza Podataka
+  - name: esport-db
+    databaseName: esport
+    user: esport_user
+    region: frankfurt
+    plan: free

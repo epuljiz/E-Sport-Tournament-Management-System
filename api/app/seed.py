@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import AsyncSessionLocal, engine
 from app.models.user import User
 from app.models.team import Team
+from app.models.tournament import Tournament
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -84,6 +85,22 @@ async def seed(session: AsyncSession) -> None:
         )
         session.add(admin)
         logger.info("Kreiran admin: %s", admin.username)
+
+    # 3. Kreiraj Mock Turnir ako ne postoji
+    from datetime import date, datetime, timedelta, timezone
+    result = await session.execute(select(Tournament).where(Tournament.name == "Global E-sports Cup 2026"))
+    if result.scalar_one_or_none() is None:
+        now = datetime.now(timezone.utc)
+        tournament = Tournament(
+            name="Global E-sports Cup 2026",
+            game="Counter-Strike 2",
+            start_date=date(2026, 8, 15),
+            location="Berlin, Germany",
+            prelim_deadline=now + timedelta(days=30),
+            final_deadline=now + timedelta(days=45)
+        )
+        session.add(tournament)
+        logger.info("Kreiran turnir: %s", tournament.name)
 
     await session.commit()
     logger.info("Seed završen!")

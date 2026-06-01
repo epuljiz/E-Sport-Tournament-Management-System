@@ -4,6 +4,7 @@
 
 import logging
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.errors import AppError, app_error_handler
 from app.core.logging import setup_logging
@@ -26,6 +27,15 @@ def create_app() -> FastAPI:
         description="Sustav za upravljanje e-sport turnirima i igračima",
         docs_url="/docs" if settings.ENV == "dev" else None,
         redoc_url=None,
+    )
+
+    origins = [origin.strip() for origin in settings.ALLOWED_ORIGINS.split(",")]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     # 3. Registracija globalnog error handlera.
